@@ -1,0 +1,79 @@
+*
+{
+    image-rendering: optimizeQuality;
+}
+
+html
+{
+    height: 100%;
+    font-family: sans-serif;
+    padding: 0;
+}
+
+body
+{
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: #aaa;
+}
+
+#main
+{
+    display: flex;
+    min-height: 100vh;
+    height: 100%;
+    width: 100%;
+    background: #ffffff;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#main.dragOver
+{
+    background: #f3e5c7;
+}
+
+.controls
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+}
+
+#canvas
+{
+    --width: 640;
+    --height: 480;
+    --scale: 0.5;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* using min-{width,height} so that .client{Width,Height}
+     * don’t get truncated to viewport size
+     */
+    min-width: calc(var(--width) * 1px);
+    min-height: calc(var(--height) * 1px);
+
+    outline: #c7c7c7 solid thin;
+    box-shadow: aliceblue 0.1em 0.1em 1.5rem 0.5rem;
+    transform: scale(var(--scale));
+    font-size: calc(1em / var(--scale));
+    overflow: hidden;
+    background-color: white;
+}
+
+svg #canvas
+{
+    --scale: 1.0;
+}
