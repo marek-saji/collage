@@ -6,10 +6,17 @@
  * [x] Export to png using domtoimage
  * v0.1.2
  * [x] Choose canvas’ dimentions and background color
+ * v0.1.3
+ * [x] Move scripts to the top of the HTML, defer loading
+ * [x] Fix downloading big images, e.g. 1600×1600px
+ * [x] Verify whether exported quality is ok (how big images do we need for print?)
  *
- * [ ] Verify whether exported quality is ok (how big images do we need for print?)
+ * [ ] Block UI while exporting (<dialog>)
+ * [ ] Don’t scale() canvas, but it’s container. That way we will not have to
+ *     change --scale for exporting.
  * [ ] Initial zoom should be “fit to viewport”. Mark only that, 100%, min and max on the slider
  * [ ] Throttle canvas’ dimentions change
+ * [ ] Hmmm… web components?
  * [ ] Wrap images in containers
  * [ ] When laying out, create slots and assign images to slots
  * [ ] Keep set of images with their natural dimentions and padding
@@ -163,18 +170,31 @@
 		event.preventDefault();
 
 		const canvas = document.getElementById('canvas');
+		const width = canvas.clientWidth;
+		const height = canvas.clientHeight;
 		const scale = canvas.style.getPropertyValue('--scale');
 		canvas.style.setProperty('--scale', 1.0);
-		const pngData = await domtoimage.toPng(canvas, {
-			width: canvas.clientWidth,
-			height: canvas.clientHeight,
+		const pngBlob = await domtoimage.toBlob(canvas, {
+			width,
+			height,
 		});
 		canvas.style.setProperty('--scale', scale);
 
-		const downloadLink = document.createElement('a');
-		downloadLink.download = 'export.png';
-		downloadLink.href = pngData;
-		downloadLink.click();
+		downloadBlob(pngBlob, `collage export ${width}x${height}.png`);
+	}
+
+
+	function downloadBlob (blob, filename)
+	{
+		const url = URL.createObjectURL(blob);
+
+		const a = document.createElement('a');
+		a.download = filename;
+		a.href = url;
+		a.rel = 'noopener';
+		a.click();
+		URL.revokeObjectURL(url);
+		delete a;
 	}
 
 
