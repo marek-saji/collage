@@ -48,12 +48,18 @@ body
     background-color: white;
 }
 
+#width,
+#height
+{
+    width: calc(5ch + 1em);
+    text-align: end;
+}
+
 #canvas
 {
     --width: 640;
     --height: 480;
     --scale: 0.5;
-
     position: relative;
     display: flex;
     align-items: center;
@@ -64,16 +70,31 @@ body
      */
     min-width: calc(var(--width) * 1px);
     min-height: calc(var(--height) * 1px);
-
     outline: #c7c7c7 solid thin;
     box-shadow: aliceblue 0.1em 0.1em 1.5rem 0.5rem;
     transform: scale(var(--scale));
-    font-size: calc(1em / var(--scale));
+    font-size: calc(1.5em / var(--scale));
     overflow: hidden;
     background-color: white;
 }
 
-svg #canvas
+.drop-prompt
 {
-    --scale: 1.0;
+    color: black;
+    font-weight: bold;
+    text-align: center;
+    padding: 0.125ex 0.5ch;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+
+    background-color: white;
+}
+
+@supports (text-shadow: red 0 0 0)
+{
+    .drop-prompt
+    {
+        background-color: transparent;
+        text-shadow: white 0 0 0.75ex;
+    }
 }

@@ -4,10 +4,12 @@
  * [x] Simple layout
  * v0.1.1
  * [x] Export to png using domtoimage
+ * v0.1.2
+ * [x] Choose canvas’ dimentions and background color
  *
- * [ ] Come up with a name
- * [ ] Export without 3rd party libraries
- *     https://web.archive.org/web/20181006205840/https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Drawing_DOM_objects_into_a_canvas
+ * [ ] Verify whether exported quality is ok (how big images do we need for print?)
+ * [ ] Initial zoom should be “fit to viewport”. Mark only that, 100%, min and max on the slider
+ * [ ] Throttle canvas’ dimentions change
  * [ ] Wrap images in containers
  * [ ] When laying out, create slots and assign images to slots
  * [ ] Keep set of images with their natural dimentions and padding
@@ -15,16 +17,22 @@
  * [ ] When image loads, don’t recalculate whole layout, just this image
  * [ ] Use transform to scale and position images, transition
  * [ ] Recalulate layout with placeholders on dragOver
+ * [ ] Fine tune images: containers’ positions
+ * [ ] Fine tune images: images’ positions and scale
+ * [ ] Choose gap between slots
  * [ ] Drag canvas to look around
  * [ ] Scroll to zoom canvas
  * [ ] Pinch to zoom canvas
  * [ ] Drag with mouse to rearrange images (show slots outlines)
  * [ ] Drag with touch to rearrange images (show slots outlines)
- * [ ] Fine tune images: containers’ positions
- * [ ] Fine tune images: images’ positions and scale
- * [ ] Choose canvas’ dimentions and background color
- * [ ] Choose gap between slots
  * [ ] Different layouts
+ * [ ] Come up with a name, description and keywords
+ * [ ] Export without 3rd party libraries
+ *     https://web.archive.org/web/20181006205840/https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Drawing_DOM_objects_into_a_canvas
+ * - [ ] Use <svg><foreignObject> instead of <div id=canvas>
+ * - [ ] Use only inline styles in canvas
+ * [ ] Export web-optimized JPEG
+ * [ ] Export web-optimized WebP
  */
 
 (function() {
@@ -58,7 +66,7 @@
 
 		    const img = document.createElement('img');
 		    img.alt = file.name;
-		    if (canvas.children.length === 0)
+		    if (canvas.children[0].tagName !== 'IMG')
 		    {
 		    	canvas.textContent = '';
 		    }
@@ -81,6 +89,11 @@
 
 	function layout (canvas)
 	{
+		if (canvas.children[0].tagName !== 'IMG')
+		{
+			return;
+		}
+
 		const canvasWidth = canvas.clientWidth;
 		const canvasHeight = canvas.clientHeight;
 		const imgs = Array.from(canvas.children);
@@ -165,6 +178,31 @@
 	}
 
 
+	function onWidthChange (event)
+	{
+		const canvas = document.getElementById('canvas');
+		canvas.style.setProperty('--width', event.currentTarget.value);
+
+		layout(canvas);
+	}
+
+
+	function onHeightChange (event)
+	{
+		const canvas = document.getElementById('canvas');
+		canvas.style.setProperty('--height', event.currentTarget.value);
+
+		layout(canvas);
+	}
+
+
+	function onBackgroundChange (event)
+	{
+		const canvas = document.getElementById('canvas');
+		canvas.style.backgroundColor = event.currentTarget.value;
+	}
+
+
 	function init ()
 	{
         const dropTarget = document.getElementById("main");
@@ -174,9 +212,22 @@
 
         const scale = document.getElementById('scale');
         scale.addEventListener('input', onScaleChange, false);
+        onScaleChange({currentTarget: scale});
+
+        const width = document.getElementById('width');
+        width.addEventListener('input', onWidthChange, false);
+        onWidthChange({currentTarget: width});
+
+        const height = document.getElementById('height');
+        height.addEventListener('input', onHeightChange, false);
+        onHeightChange({currentTarget: height});
+
+        const background = document.getElementById('background');
+        background.addEventListener('input', onBackgroundChange, false);
+        onBackgroundChange({currentTarget: background});
 
         const exportButton = document.getElementById('export');
-        exportButton.addEventListener('click', onExport, false)
+        exportButton.addEventListener('click', onExport, false);
 	}
 
     init();

@@ -9,6 +9,18 @@
     <body>
         <div id="main">
             <div class="controls">
+                <input
+                    id="width"
+                    type="number" step=1 min=1 value=640>
+                ×
+                <input
+                    id="height"
+                    type="number" step=1 min=1 value=480>
+
+                <input
+                    id="background"
+                    type="color" value="#ffffff">
+
                 Scale:
                 <input
                     id="scale"
@@ -31,7 +43,7 @@
             </div>
 
             <div id="canvas">
-                Drop me some images
+                <span class="drop-prompt">Drop me some images</span>
             </div>
         </div>
 
