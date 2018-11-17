@@ -10,14 +10,14 @@
 
     <body>
         <div id="main">
-            <div class="controls">
+            <div id="controls">
                 <input
                     id="width"
-                    type="number" step=1 min=1 value=640>
+                    type="number" step=1 min=1 value=1000>
                 ×
                 <input
                     id="height"
-                    type="number" step=1 min=1 value=480>
+                    type="number" step=1 min=1 value=1000>
 
                 <input
                     id="background"
@@ -31,12 +31,9 @@
                 >
                 <datalist id="scale-datalist">
                   <option value="0.1" label="10%">
-                  <option value="0.5" label="50%">
                   <option value="1.0" label="100%">
-                  <option value="1.5" label="150%">
-                  <option value="2.0" label="200%">
-                  <option value="2.5" label="250%">
                   <option value="3.0" label="300%">
+                  <option value="1.0" label="fit" id="scale-fit-option">
                 </datalist>
 
                 <button id="export" type="button">

@@ -35,7 +35,7 @@ body
     background: #f3e5c7;
 }
 
-.controls
+#controls
 {
     position: fixed;
     top: 0;

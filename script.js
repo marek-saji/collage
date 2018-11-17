@@ -10,12 +10,12 @@
  * [x] Move scripts to the top of the HTML, defer loading
  * [x] Fix downloading big images, e.g. 1600×1600px
  * [x] Verify whether exported quality is ok (how big images do we need for print?)
- * v0.5
+ * v0.1.4
  * [x] Block UI while exporting
+ * [x] Make initial zoom “fit to viewport”. Mark only that, 100%, min and max on the slider
  *
  * [ ] Don’t scale() canvas, but it’s container. That way we will not have to
  *     change --scale for exporting.
- * [ ] Initial zoom should be “fit to viewport”. Mark only that, 100%, min and max on the slider
  * [ ] Throttle canvas’ dimentions change
  * [ ] Hmmm… web components?
  * [ ] Wrap images in containers
@@ -250,6 +250,10 @@
 		canvas.style.setProperty('--width', event.currentTarget.value);
 
 		layout(canvas);
+		adjustScaleOptions({
+			width: event.currentTarget.value,
+			height: canvas.clientHeight,
+		});
 	}
 
 
@@ -259,6 +263,39 @@
 		canvas.style.setProperty('--height', event.currentTarget.value);
 
 		layout(canvas);
+		adjustScaleOptions({
+			width: canvas.clientHeight,
+			height: event.currentTarget.value,
+		});
+	}
+
+	function adjustScaleOptions ({width, height})
+	{
+		const controls = document.getElementById('controls');
+		const viewportWidth = document.body.clientWidth;
+		const viewportHeight = document.body.clientHeight - controls.clientHeight;
+
+		const {
+			clientWidth: canvasWidth,
+			clientHeight: canvasHeight,
+		} = document.getElementById('canvas');
+
+		const scale = Math.min(
+			Math.min(1.0, viewportWidth * 0.9 / canvasWidth),
+			Math.min(1.0, viewportHeight * 0.9 / canvasHeight)
+		);
+
+		const scaleFitOption = document.getElementById('scale-fit-option');
+		scaleFitOption.value = Math.floor(scale * 10) / 10;
+	}
+
+	function zoomToDefaultZoomLevel ()
+	{
+		const scale = document.getElementById('scale');
+		const scaleFitOption = document.getElementById('scale-fit-option');
+
+		scale.value = scaleFitOption.value;
+		onScaleChange({currentTarget: scale});
 	}
 
 
@@ -276,10 +313,6 @@
         dropTarget.addEventListener("dragleave", onDragOut, false);
         dropTarget.addEventListener("drop", onDrop, false);
 
-        const scale = document.getElementById('scale');
-        scale.addEventListener('input', onScaleChange, false);
-        onScaleChange({currentTarget: scale});
-
         const width = document.getElementById('width');
         width.addEventListener('input', onWidthChange, false);
         onWidthChange({currentTarget: width});
@@ -291,6 +324,12 @@
         const background = document.getElementById('background');
         background.addEventListener('input', onBackgroundChange, false);
         onBackgroundChange({currentTarget: background});
+
+        const scale = document.getElementById('scale');
+        scale.addEventListener('input', onScaleChange, false);
+        onScaleChange({currentTarget: scale});
+
+        zoomToDefaultZoomLevel();
 
         const exportButton = document.getElementById('export');
         exportButton.addEventListener('click', onExport, false);
