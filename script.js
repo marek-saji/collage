@@ -10,8 +10,9 @@
  * [x] Move scripts to the top of the HTML, defer loading
  * [x] Fix downloading big images, e.g. 1600×1600px
  * [x] Verify whether exported quality is ok (how big images do we need for print?)
+ * v0.5
+ * [x] Block UI while exporting
  *
- * [ ] Block UI while exporting (<dialog>)
  * [ ] Don’t scale() canvas, but it’s container. That way we will not have to
  *     change --scale for exporting.
  * [ ] Initial zoom should be “fit to viewport”. Mark only that, 100%, min and max on the slider
@@ -169,10 +170,14 @@
 	{
 		event.preventDefault();
 
+		const progressModal = await createProgressModal('Export');
+
 		const canvas = document.getElementById('canvas');
 		const width = canvas.clientWidth;
 		const height = canvas.clientHeight;
 		const scale = canvas.style.getPropertyValue('--scale');
+
+		await progressModal.addMessage('Creating image…');
 		canvas.style.setProperty('--scale', 1.0);
 		const pngBlob = await domtoimage.toBlob(canvas, {
 			width,
@@ -180,7 +185,48 @@
 		});
 		canvas.style.setProperty('--scale', scale);
 
+		await progressModal.addMessage('Downloading…');
 		downloadBlob(pngBlob, `collage export ${width}x${height}.png`);
+
+		progressModal.close();
+	}
+
+	async function createProgressModal (title)
+	{
+		const modal = document.createElement('div');
+		modal.setAttribute('role', 'log');
+		modal.setAttribute('aria-live', 'polite');
+		modal.classList.add('progressModal');
+
+		const heading = document.createElement('h4');
+		heading.classList.add('progressModal__heading');
+		heading.textContent = title;
+		modal.appendChild(heading);
+
+		modal.addMessage = (text) => {
+			const msg = document.createElement('p');
+			msg.textContent = text;
+			modal.appendChild(msg);
+		};
+		modal.close = () => {
+			modal.remove();
+		};
+
+		document.body.appendChild(modal);
+		await tick();
+
+		return modal;
+	}
+
+	async function addProgressMessage (dialog, message)
+	{
+		dialog.innerHTML += `<li>${message}</li>`;
+		await tick();
+	}
+
+	function tick ()
+	{
+		return new Promise((resolve) => setTimeout(resolve, 10));
 	}
 
 
