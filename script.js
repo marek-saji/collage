@@ -13,17 +13,17 @@
  * v0.1.4
  * [x] Block UI while exporting
  * [x] Make initial zoom “fit to viewport”. Mark only that, 100%, min and max on the slider
+ * v0.1.5
+ * [x] “App-like” layout
+ * [x] Don’t scale() canvas, but it’s container. No need to change --scale for exporting
+ * [x] Wrap images in containers
  *
- * [ ] Don’t scale() canvas, but it’s container. That way we will not have to
- *     change --scale for exporting.
- * [ ] Throttle canvas’ dimentions change
- * [ ] Hmmm… web components?
- * [ ] Wrap images in containers
  * [ ] When laying out, create slots and assign images to slots
  * [ ] Keep set of images with their natural dimentions and padding
  *     (images + slots = state)
  * [ ] When image loads, don’t recalculate whole layout, just this image
  * [ ] Use transform to scale and position images, transition
+ * [ ] Throttle canvas’ dimentions change
  * [ ] Recalulate layout with placeholders on dragOver
  * [ ] Fine tune images: containers’ positions
  * [ ] Fine tune images: images’ positions and scale
@@ -48,19 +48,19 @@
 	function onDragIn (event)
 	{
 		event.preventDefault();
-		event.currentTarget.classList.toggle('dragOver', true);
+		event.currentTarget.classList.toggle('page--dragOver', true);
 	}
 
 	function onDragOut (e)
 	{
 		event.preventDefault();
-		event.currentTarget.classList.toggle('dragOver', false);
+		event.currentTarget.classList.toggle('page--dragOver', false);
 	}
 
 
 	function onDrop (event)
 	{
-		const canvas = document.getElementById('canvas');
+		const canvas = document.querySelector('.page');
 
 		onDragOut(event);
 
@@ -72,13 +72,15 @@
 		        continue;
 		    }
 
+			const image = document.createElement('div');
 		    const img = document.createElement('img');
 		    img.alt = file.name;
-		    if (canvas.children[0].tagName !== 'IMG')
+		    if (canvas.children[0].classList.contains('page__emptyMessage'))
 		    {
 		    	canvas.textContent = '';
 		    }
-		    canvas.insertBefore(img, null);
+		    image.appendChild(img);
+		    canvas.insertBefore(image, null);
 		    layout(canvas);
 
             const reader = new FileReader();
@@ -97,15 +99,15 @@
 
 	function layout (canvas)
 	{
-		if (canvas.children[0].tagName !== 'IMG')
+		if (canvas.children[0].classList.contains('page__emptyMessage'))
 		{
 			return;
 		}
 
 		const canvasWidth = canvas.clientWidth;
 		const canvasHeight = canvas.clientHeight;
-		const imgs = Array.from(canvas.children);
-		const count = imgs.length;
+		const images = Array.from(canvas.children);
+		const count = images.length;
 		const gridSize = Math.ceil(Math.sqrt(count));
 
 		console.group('recalc canvas', `${gridSize}×${gridSize}`);
@@ -114,13 +116,14 @@
 				idx = 0,
 				col = 0,
 				row = 0;
-			idx < imgs.length;
+			idx < images.length;
 			idx += 1,
 			col = idx % gridSize,
 			row = Math.floor(idx / gridSize)	
 		)
 		{
-			const img = imgs[idx];
+			const image = images[idx];
+			const img = image.children[0];
 			let top = Math.round(row * canvasHeight / gridSize);
 			let left = Math.round(col * canvasWidth / gridSize);
 			let width = Math.round(canvasWidth / gridSize);
@@ -149,9 +152,9 @@
 				height = newHeight;
 			}
 
-			img.style.position = 'absolute';
-			img.style.top = `${top}px`;
-			img.style.left = `${left}px`;
+			image.style.position = 'absolute';
+			image.style.top = `${top}px`;
+			image.style.left = `${left}px`;
 			img.style.width = `${width}px`;
 			img.style.height = `${height}px`;
 		}
@@ -162,7 +165,7 @@
 	function onScaleChange (event)
 	{
 		const scale = event.currentTarget.value;
-		document.getElementById('canvas').style.setProperty('--scale', scale);
+		document.querySelector('.zoomArea__item').style.setProperty('--scale', scale);
 	}
 
 
@@ -172,18 +175,15 @@
 
 		const progressModal = await createProgressModal('Export');
 
-		const canvas = document.getElementById('canvas');
+		const canvas = document.querySelector('.page');
 		const width = canvas.clientWidth;
 		const height = canvas.clientHeight;
-		const scale = canvas.style.getPropertyValue('--scale');
 
 		await progressModal.addMessage('Creating image…');
-		canvas.style.setProperty('--scale', 1.0);
 		const pngBlob = await domtoimage.toBlob(canvas, {
 			width,
 			height,
 		});
-		canvas.style.setProperty('--scale', scale);
 
 		await progressModal.addMessage('Downloading…');
 		downloadBlob(pngBlob, `collage export ${width}x${height}.png`);
@@ -246,7 +246,7 @@
 
 	function onWidthChange (event)
 	{
-		const canvas = document.getElementById('canvas');
+		const canvas = document.querySelector('.page');
 		canvas.style.setProperty('--width', event.currentTarget.value);
 
 		layout(canvas);
@@ -259,7 +259,7 @@
 
 	function onHeightChange (event)
 	{
-		const canvas = document.getElementById('canvas');
+		const canvas = document.querySelector('.page');
 		canvas.style.setProperty('--height', event.currentTarget.value);
 
 		layout(canvas);
@@ -271,14 +271,16 @@
 
 	function adjustScaleOptions ({width, height})
 	{
-		const controls = document.getElementById('controls');
-		const viewportWidth = document.body.clientWidth;
-		const viewportHeight = document.body.clientHeight - controls.clientHeight;
+		const zoomArea = document.querySelector('.zoomArea');
+		const {
+			clientWidth: viewportWidth,
+			clientHeight: viewportHeight,
+		} = document.querySelector('.zoomArea');
 
 		const {
 			clientWidth: canvasWidth,
 			clientHeight: canvasHeight,
-		} = document.getElementById('canvas');
+		} = document.querySelector('.page');
 
 		const scale = Math.min(
 			Math.min(1.0, viewportWidth * 0.9 / canvasWidth),
@@ -301,14 +303,14 @@
 
 	function onBackgroundChange (event)
 	{
-		const canvas = document.getElementById('canvas');
+		const canvas = document.querySelector('.page');
 		canvas.style.backgroundColor = event.currentTarget.value;
 	}
 
 
 	function init ()
 	{
-        const dropTarget = document.getElementById("main");
+        const dropTarget = document.querySelector(".page");
         dropTarget.addEventListener("dragover", onDragIn, false);
         dropTarget.addEventListener("dragleave", onDragOut, false);
         dropTarget.addEventListener("drop", onDrop, false);

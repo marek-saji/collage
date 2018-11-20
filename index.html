@@ -9,8 +9,8 @@
     </head>
 
     <body>
-        <div id="main">
-            <div id="controls">
+        <div id="main" class="app">
+            <div id="controls" class="app__header controls">
                 <input
                     id="width"
                     type="number" step=1 min=1 value=1000>
@@ -41,8 +41,15 @@
                 </button>
             </div>
 
-            <div id="canvas">
-                <span class="drop-prompt">Drop me some images</span>
+            <div class="app__content zoomArea">
+                    <div class="zoomArea__item">
+                        <div id="canvas" class="page">
+                            <p class="page__emptyMessage">
+                                Drop me some images
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </body>

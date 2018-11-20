@@ -1,41 +1,53 @@
+*,
+*::before,
+*::after
+{ 
+  box-sizing: border-box;
+}
+
+
 *
 {
     image-rendering: optimizeQuality;
 }
 
-html
-{
-    height: 100%;
-    font-family: sans-serif;
-    padding: 0;
-}
-
+html,
 body
 {
-    height: 100%;
-    padding: 0;
     margin: 0;
-    background-color: #aaa;
+    padding: 0;
 }
 
-#main
+html
+{
+    font-family: sans-serif;
+}
+
+
+/* COMPONENT: app */
+
+.app
 {
     display: flex;
-    min-height: 100vh;
-    height: 100%;
-    width: 100%;
-    background: #ffffff;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    height: 100vh;
     overflow: hidden;
 }
 
-#main.dragOver
+.app__header
 {
-    background: #f3e5c7;
 }
 
-#controls
+.app__content
+{
+    flex: 1 1 auto;
+    background-color: #aaa;
+}
+
+
+/* COMPONENT: controls */
+
+.controls
 {
     position: fixed;
     top: 0;
@@ -48,37 +60,68 @@ body
     background-color: white;
 }
 
-#width,
-#height
+.controls #width,
+.controls #height
 {
     width: calc(5ch + 1em);
     text-align: end;
 }
 
-#canvas
+
+/* COMPONENT: zoomArea */
+
+.zoomArea
+{
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+}
+
+.zoomArea__item
+{
+    --scale: 1.0;
+    --top: 0;
+    --left: 0;
+    position: relative;
+    top: calc(var(--top) * 1px);
+    left: calc(var(--left) * 1px);
+    flex: 0 0 auto;
+    transform: scale(var(--scale));
+    font-size: calc(1.5em / var(--scale));
+}
+
+
+/* COMPONENT: page */
+
+.page
 {
     --width: 640;
     --height: 480;
-    --scale: 0.5;
+    --widthPx: calc(var(--width) * 1px);
+    --heightPx: calc(var(--height) * 1px);
+
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    /* using min-{width,height} so that .client{Width,Height}
-     * don’t get truncated to viewport size
-     */
-    min-width: calc(var(--width) * 1px);
-    min-height: calc(var(--height) * 1px);
+    width: var(--widthPx);
+    height: var(--heightPx);
+    min-width: var(--widthPx);
+    min-height: var(--heightPx);
     outline: #c7c7c7 solid thin;
     box-shadow: aliceblue 0.1em 0.1em 1.5rem 0.5rem;
-    transform: scale(var(--scale));
-    font-size: calc(1.5em / var(--scale));
     overflow: hidden;
     background-color: white;
 }
 
-.drop-prompt
+.page--dragOver
+{
+    background: #f3e5c7;
+}
+
+.page__emptyMessage
 {
     color: black;
     font-weight: bold;
@@ -92,12 +135,15 @@ body
 
 @supports (text-shadow: red 0 0 0)
 {
-    .drop-prompt
+    .page__emptyMessage
     {
         background-color: transparent;
         text-shadow: white 0 0 0.75ex;
     }
 }
+
+
+/* COMPONENT: progressModal */
 
 .progressModal
 {
